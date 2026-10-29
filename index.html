@@ -1,379 +1,417 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>بوابة الواجبات المدرسية - Al-ARQAM SCHOOLS</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Cairo', sans-serif; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بوابة الواجبات المدرسية - Al-ARQAM SCHOOLS</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style type="text/tailwindcss">
+  body { font-family: 'Cairo', sans-serif; }
+  .inp { @apply w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none transition disabled:bg-slate-100; }
+  .btn { @apply px-3 py-2 text-sm font-bold rounded-lg border transition; }
+  .vt { @apply px-4 py-2 text-sm font-bold rounded-lg text-slate-600 bg-slate-100; }
+  .vt.on { @apply bg-indigo-600 text-white; }
+</style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col justify-between">
 
-  <!-- Header -->
-  <header class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white shadow-lg border-b-4 border-amber-400">
-    <div class="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="text-center sm:text-right">
-        <h1 class="text-2xl font-bold tracking-wide text-amber-300">مدارس الأرقم الأهلية | AL-ARQAM SCHOOLS</h1>
-        <p class="text-indigo-200 text-sm font-semibold mt-1">قسم اللغة الإنجليزية - English Language Department</p>
-      </div>
-      
-      <!-- Nav Tabs -->
-      <div class="flex items-center gap-2 bg-slate-800/60 p-1.5 rounded-xl border border-indigo-400/30">
-        <button id="tabStudent" onclick="switchTab('student')" class="px-4 py-2 rounded-lg font-bold text-sm transition shadow-sm bg-indigo-600 text-white">
-          <i class="fa-solid fa-graduation-cap ml-1.5"></i> واجهة الطالب
-        </button>
-        <button id="tabTeacher" onclick="switchTab('teacher')" class="px-4 py-2 rounded-lg font-bold text-sm transition text-slate-300 hover:text-white">
-          <i class="fa-solid fa-chalkboard-user ml-1.5"></i> لوحة المعلم
-        </button>
-      </div>
+<header class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white shadow-lg border-b-4 border-amber-400">
+  <div class="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="text-center sm:text-right">
+      <h1 class="text-2xl font-bold text-amber-300">مدارس الأرقم الأهلية | AL-ARQAM SCHOOLS</h1>
+      <p class="text-indigo-200 text-sm font-semibold mt-1">قسم اللغة الإنجليزية - English Language Department</p>
     </div>
-  </header>
-
-  <!-- Main Content -->
-  <main class="max-w-5xl mx-auto p-4 md:p-6 flex-grow w-full">
-
-    <!-- STUDENT SECTION -->
-    <section id="studentSection" class="block">
-      <div class="bg-white rounded-2xl shadow-md p-6 md:p-8 border border-slate-200">
-        <div class="text-center mb-6">
-          <h2 class="text-xl md:text-2xl font-bold text-slate-800">إرسال الواجب المدرسي</h2>
-          <p class="text-slate-500 text-sm mt-1">يرجى تعبئة البيانات وإرفاق ملف أو صورة الواجب بوضوح</p>
-        </div>
-
-        <form id="submissionForm" onsubmit="handleStudentSubmit(event)" class="space-y-5">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label class="block text-sm font-bold text-slate-700 mb-1">اسم الطالب <span class="text-red-500">*</span></label>
-              <input type="text" id="studentName" required placeholder="مثال: أحمد محمد علي" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
-            </div>
-
-            <div>
-              <label class="block text-sm font-bold text-slate-700 mb-1">الصف الدراسي <span class="text-red-500">*</span></label>
-              <select id="gradeSelect" required onchange="handleGradeChange()" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
-                <option value="" disabled selected>اختر المرحلة والصف...</option>
-                <option value="الابتدائية">المرحلة الابتدائية</option>
-                <option value="المتوسطة">المرحلة المتوسطة</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label class="block text-sm font-bold text-slate-700 mb-1">الفصل <span class="text-red-500">*</span></label>
-              <select id="classSelect" required disabled class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition disabled:bg-slate-100 disabled:cursor-not-allowed">
-                <option value="" disabled selected>يرجى اختيار المرحلة أولاً</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-sm font-bold text-slate-700 mb-1">ملاحظات إضافية</label>
-              <input type="text" id="studentNote" placeholder="أي ملاحظة تود كتابتها للمعلم..." class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-bold text-slate-700 mb-2">إرفاق الواجب (صور أو ملفات PDF) <span class="text-red-500">*</span></label>
-            <div onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-indigo-300 hover:border-indigo-500 bg-indigo-50/50 hover:bg-indigo-50/80 rounded-xl p-6 text-center cursor-pointer transition">
-              <i class="fa-solid fa-cloud-arrow-up text-4xl text-indigo-500 mb-2"></i>
-              <p class="text-sm font-bold text-slate-700">اضغط هنا لاختيار الملفات أو الصور</p>
-              <p class="text-xs text-slate-500 mt-1">يدعم الصور (PNG, JPG) وملفات PDF</p>
-              <input type="file" id="fileInput" multiple accept="image/*,application/pdf" class="hidden" onchange="handleFileSelect(event)">
-            </div>
-
-            <!-- المعاينة -->
-            <div id="filePreviewList" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4"></div>
-          </div>
-
-          <button type="submit" id="submitBtn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-paper-plane"></i>
-            <span>إرسال الواجب الآن</span>
-          </button>
-        </form>
-      </div>
-    </section>
-
-    <!-- TEACHER SECTION -->
-    <section id="teacherSection" class="hidden">
-      <div class="bg-white rounded-2xl shadow-md p-6 md:p-8 border border-slate-200">
-        
-        <!-- Header & Filter -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
-          <div>
-            <h2 class="text-xl md:text-2xl font-bold text-slate-800 flex items-center gap-2">
-              <i class="fa-solid fa-list-check text-indigo-600"></i>
-              <span>الواجبات المستلمة</span>
-              <span id="submissionsCount" class="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1 rounded-full font-bold">0</span>
-            </h2>
-            <p class="text-slate-500 text-xs mt-1">تصفح وتقييم واجبات الطلاب المرفوعة</p>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-2">
-            <select id="teacherFilterGrade" onchange="renderTeacherSubmissions()" class="px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none">
-              <option value="all">كل المراحل</option>
-              <option value="الابتدائية">المرحلة الابتدائية</option>
-              <option value="المتوسطة">المرحلة المتوسطة</option>
-            </select>
-            <button onclick="clearAllSubmissions()" class="px-3 py-2 text-sm bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-lg transition border border-red-200">
-              <i class="fa-solid fa-trash-can ml-1"></i> مسح الكل
-            </button>
-          </div>
-        </div>
-
-        <!-- Submissions List -->
-        <div id="submissionsContainer" class="mt-6 space-y-4">
-          <!-- تضاف العناصر ديناميكياً هنا -->
-        </div>
-
-      </div>
-    </section>
-
-  </main>
-
-  <!-- Footer -->
-  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-8">
-    مدارس الأرقم الأهلية - قسم اللغة الإنجليزية | جميع الحقوق محفوظة
-  </footer>
-
-  <!-- File View Modal -->
-  <div id="previewModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
-      <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-        <h3 id="modalTitle" class="font-bold text-slate-800 text-sm md:text-base truncate">معاينة الملف</h3>
-        <button onclick="closeModal()" class="text-slate-400 hover:text-red-500 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 transition">&times;</button>
-      </div>
-      <div id="modalBody" class="p-4 overflow-y-auto flex-grow flex items-center justify-center bg-slate-100">
-        <!-- المحتوى المعروض -->
-      </div>
+    <div class="flex items-center gap-2 bg-slate-800/60 p-1.5 rounded-xl border border-indigo-400/30">
+      <button id="tabStudent" onclick="switchTab('student')" class="px-4 py-2 rounded-lg font-bold text-sm"><i class="fa-solid fa-graduation-cap ml-1.5"></i> واجهة الطالب</button>
+      <button id="tabTeacher" onclick="requestTeacherAccess()" class="px-4 py-2 rounded-lg font-bold text-sm"><i class="fa-solid fa-lock ml-1.5"></i> لوحة المعلم</button>
     </div>
   </div>
+</header>
 
-  <script>
-    // Classes setup
-    const gradeClasses = {
-      "الابتدائية": ["الصف الأول", "الصف الثاني", "الصف الثالث", "الصف الرابع", "الصف الخامس", "الصف السادس"],
-      "المتوسطة": ["أول متوسط", "ثاني متوسط", "ثالث متوسط"]
+<main class="max-w-5xl mx-auto p-4 md:p-6 flex-grow w-full">
+
+<!-- STUDENT -->
+<section id="studentSection">
+  <div class="bg-white rounded-2xl shadow-md p-6 md:p-8 border border-slate-200">
+    <div class="text-center mb-6">
+      <h2 class="text-xl md:text-2xl font-bold">إرسال الواجب المدرسي</h2>
+      <p class="text-slate-500 text-sm mt-1">يرجى تعبئة البيانات وإرفاق ملف أو صورة الواجب بوضوح</p>
+    </div>
+    <form id="submissionForm" onsubmit="handleStudentSubmit(event)" class="space-y-5">
+      <div class="grid md:grid-cols-2 gap-5">
+        <div><label class="block text-sm font-bold mb-1">اسم الطالب <span class="text-red-500">*</span></label>
+          <input type="text" id="studentName" required maxlength="80" placeholder="مثال: أحمد محمد علي" class="inp"></div>
+        <div><label class="block text-sm font-bold mb-1">عنوان الواجب <span class="text-red-500">*</span></label>
+          <input type="text" id="hwTitle" required maxlength="100" placeholder="مثال: Unit 3 - Exercise 2" class="inp"></div>
+        <div><label class="block text-sm font-bold mb-1">المرحلة <span class="text-red-500">*</span></label>
+          <select id="gradeSelect" required onchange="fillClasses('gradeSelect','classSelect')" class="inp">
+            <option value="" disabled selected>اختر المرحلة...</option>
+            <option value="الابتدائية">المرحلة الابتدائية</option>
+            <option value="المتوسطة">المرحلة المتوسطة</option>
+          </select></div>
+        <div><label class="block text-sm font-bold mb-1">الفصل <span class="text-red-500">*</span></label>
+          <select id="classSelect" required disabled class="inp"><option value="" disabled selected>يرجى اختيار المرحلة أولاً</option></select></div>
+      </div>
+      <div><label class="block text-sm font-bold mb-1">ملاحظات إضافية</label>
+        <input type="text" id="studentNote" maxlength="200" placeholder="أي ملاحظة للمعلم..." class="inp"></div>
+      <div>
+        <label class="block text-sm font-bold mb-2">إرفاق الواجب (صور أو PDF) <span class="text-red-500">*</span></label>
+        <div onclick="fileInput.click()" class="border-2 border-dashed border-indigo-300 hover:border-indigo-500 bg-indigo-50/50 rounded-xl p-6 text-center cursor-pointer">
+          <i class="fa-solid fa-cloud-arrow-up text-4xl text-indigo-500 mb-2"></i>
+          <p class="text-sm font-bold">اضغط هنا لاختيار الملفات أو الصور</p>
+          <p class="text-xs text-slate-500 mt-1">الصور تُضغط تلقائياً · حد ملفات PDF: 1.5 ميجا</p>
+          <input type="file" id="fileInput" multiple accept="image/*,application/pdf" class="hidden" onchange="handleFileSelect(event)">
+        </div>
+        <div id="filePreviewList" class="grid sm:grid-cols-2 gap-3 mt-4"></div>
+      </div>
+      <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md"><i class="fa-solid fa-paper-plane ml-2"></i>إرسال الواجب الآن</button>
+    </form>
+  </div>
+</section>
+
+<!-- TEACHER -->
+<section id="teacherSection" class="hidden">
+  <div class="bg-white rounded-2xl shadow-md p-6 md:p-8 border border-slate-200">
+    <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200">
+      <div class="flex flex-wrap gap-2">
+        <button id="vList" class="vt" onclick="setView('List')"><i class="fa-solid fa-list-check ml-1"></i>الواجبات</button>
+        <button id="vStats" class="vt" onclick="setView('Stats')"><i class="fa-solid fa-chart-column ml-1"></i>إحصائيات الفصول</button>
+        <button id="vStu" class="vt" onclick="setView('Stu')"><i class="fa-solid fa-user ml-1"></i>تقرير طالب</button>
+      </div>
+      <button onclick="lockTeacherBoard()" class="btn bg-slate-100 border-slate-300 text-slate-600"><i class="fa-solid fa-right-from-bracket ml-1"></i>قفل اللوحة</button>
+    </div>
+
+    <!-- List -->
+    <div id="pList" class="mt-5">
+      <div class="flex flex-wrap gap-2 items-center mb-4">
+        <input id="fSearch" oninput="renderList()" placeholder="بحث باسم الطالب..." class="inp !w-auto flex-1 min-w-[140px] !py-2 text-sm">
+        <select id="fGrade" onchange="fillClasses('fGrade','fClass',true);renderList()" class="inp !w-auto !py-2 text-sm">
+          <option value="all">كل المراحل</option><option value="الابتدائية">الابتدائية</option><option value="المتوسطة">المتوسطة</option></select>
+        <select id="fClass" onchange="renderList()" class="inp !w-auto !py-2 text-sm"><option value="all">كل الفصول</option></select>
+        <span id="cnt" class="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1 rounded-full font-bold">0</span>
+        <button onclick="clearAll()" class="btn bg-red-50 hover:bg-red-100 text-red-600 border-red-200"><i class="fa-solid fa-trash-can ml-1"></i>مسح الكل</button>
+      </div>
+      <div id="listBox" class="space-y-4"></div>
+    </div>
+
+    <!-- Stats -->
+    <div id="pStats" class="mt-5 hidden">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <h3 class="font-bold">إحصائية الواجبات لكل فصل</h3>
+        <div class="flex gap-2" id="statsExp"></div>
+      </div>
+      <div class="overflow-x-auto"><table class="w-full text-sm text-center border border-slate-200" id="statsTbl"></table></div>
+    </div>
+
+    <!-- Student report -->
+    <div id="pStu" class="mt-5 hidden">
+      <div class="flex flex-wrap items-center gap-2 mb-4">
+        <select id="stuSel" onchange="renderStudent()" class="inp !w-auto flex-1 min-w-[200px] !py-2 text-sm"></select>
+        <div class="flex gap-2" id="stuExp"></div>
+      </div>
+      <div id="stuBox"></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-8">مدارس الأرقم الأهلية - قسم اللغة الإنجليزية | جميع الحقوق محفوظة</footer>
+
+<!-- Password modal -->
+<div id="passwordModal" class="fixed inset-0 bg-slate-900/80 hidden z-50 items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center">
+    <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fa-solid fa-lock"></i></div>
+    <h3 class="font-bold text-lg mb-1">تسجيل دخول المعلم</h3>
+    <p class="text-xs text-slate-500 mb-5">أدخل الرقم السري للوصول للوحة التحكم</p>
+    <form onsubmit="verifyPassword(event)">
+      <input type="password" id="teacherPasswordInput" required class="inp mb-3 text-center text-lg tracking-widest">
+      <p id="passwordError" class="text-red-500 text-xs mb-3 hidden">الرقم السري غير صحيح</p>
+      <div class="flex gap-2">
+        <button type="button" onclick="closePasswordModal()" class="w-1/2 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm">إلغاء</button>
+        <button type="submit" class="w-1/2 py-2.5 bg-indigo-600 text-white font-bold rounded-xl text-sm">دخول</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- File modal -->
+<div id="previewModal" class="fixed inset-0 bg-slate-900/80 hidden z-50 items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+    <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+      <h3 id="modalTitle" class="font-bold text-sm truncate"></h3>
+      <button onclick="closeModal()" class="text-slate-400 hover:text-red-500 text-xl w-8 h-8">&times;</button>
+    </div>
+    <div id="modalBody" class="p-4 overflow-y-auto flex-grow flex items-center justify-center bg-slate-100"></div>
+  </div>
+</div>
+
+<script>
+const TEACHER_PIN = "19931993"; // تنبيه: ظاهر لأي شخص يفتح الكود. الحماية الحقيقية تحتاج خادماً.
+const KEY = 'al_arqam_submissions';
+const gradeClasses = {
+  "الابتدائية": ["الصف الأول","الصف الثاني","الصف الثالث","الصف الرابع","الصف الخامس","الصف السادس"],
+  "المتوسطة": ["أول متوسط","ثاني متوسط","ثالث متوسط"]
+};
+let teacherAuth = false, selectedFiles = [], curView = 'List';
+const $ = id => document.getElementById(id);
+
+/* ---------- helpers ---------- */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s).trim().replace(/\s+/g, ' ');
+const fmtDate = ts => new Date(ts).toLocaleString('ar-SA', {dateStyle:'medium', timeStyle:'short'});
+function load() { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } }
+function save(l) {
+  try { localStorage.setItem(KEY, JSON.stringify(l)); return true; }
+  catch { alert('مساحة التخزين ممتلئة. احذف بعض الواجبات القديمة أو قلّل حجم الملفات.'); return false; }
+}
+const stuKey = s => `${s.name}|${s.grade}|${s.className}`;
+
+/* ---------- tabs & auth ---------- */
+function switchTab(t) {
+  const isS = t === 'student';
+  $('studentSection').classList.toggle('hidden', !isS);
+  $('teacherSection').classList.toggle('hidden', isS);
+  $('tabStudent').className = 'px-4 py-2 rounded-lg font-bold text-sm ' + (isS ? 'bg-indigo-600 text-white' : 'text-slate-300');
+  $('tabTeacher').className = 'px-4 py-2 rounded-lg font-bold text-sm ' + (!isS ? 'bg-indigo-600 text-white' : 'text-slate-300');
+  if (!isS) setView(curView);
+}
+function requestTeacherAccess() {
+  if (teacherAuth) return switchTab('teacher');
+  $('teacherPasswordInput').value = ''; $('passwordError').classList.add('hidden');
+  $('passwordModal').classList.replace('hidden', 'flex'); $('teacherPasswordInput').focus();
+}
+function closePasswordModal() { $('passwordModal').classList.replace('flex', 'hidden'); }
+function verifyPassword(e) {
+  e.preventDefault();
+  if ($('teacherPasswordInput').value === TEACHER_PIN) { teacherAuth = true; closePasswordModal(); switchTab('teacher'); }
+  else $('passwordError').classList.remove('hidden');
+}
+function lockTeacherBoard() { teacherAuth = false; switchTab('student'); }
+
+function setView(v) {
+  curView = v;
+  ['List','Stats','Stu'].forEach(x => { $('p'+x).classList.toggle('hidden', x !== v); $('v'+x).classList.toggle('on', x === v); });
+  if (v === 'List') renderList(); if (v === 'Stats') renderStats(); if (v === 'Stu') fillStudents();
+}
+
+/* ---------- student side ---------- */
+function fillClasses(gId, cId, withAll) {
+  const g = $(gId).value, c = $(cId);
+  c.innerHTML = withAll ? '<option value="all">كل الفصول</option>' : '<option value="" disabled selected>اختر الفصل...</option>';
+  c.disabled = !gradeClasses[g];
+  (gradeClasses[g] || []).forEach(x => c.add(new Option(x, x)));
+}
+function compressImage(file) {
+  return new Promise((res, rej) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const m = 1280, r = Math.min(1, m / Math.max(img.width, img.height));
+      const cv = document.createElement('canvas'); cv.width = img.width * r; cv.height = img.height * r;
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(url); res(cv.toDataURL('image/jpeg', 0.7));
     };
-
-    let selectedFiles = [];
-
-    // Switch between Student and Teacher view
-    function switchTab(tab) {
-      const studentSec = document.getElementById('studentSection');
-      const teacherSec = document.getElementById('teacherSection');
-      const tabStudent = document.getElementById('tabStudent');
-      const tabTeacher = document.getElementById('tabTeacher');
-
-      if (tab === 'student') {
-        studentSec.classList.remove('hidden');
-        teacherSec.classList.add('hidden');
-        tabStudent.className = "px-4 py-2 rounded-lg font-bold text-sm transition shadow-sm bg-indigo-600 text-white";
-        tabTeacher.className = "px-4 py-2 rounded-lg font-bold text-sm transition text-slate-300 hover:text-white";
-      } else {
-        studentSec.classList.add('hidden');
-        teacherSec.classList.remove('hidden');
-        tabTeacher.className = "px-4 py-2 rounded-lg font-bold text-sm transition shadow-sm bg-indigo-600 text-white";
-        tabStudent.className = "px-4 py-2 rounded-lg font-bold text-sm transition text-slate-300 hover:text-white";
-        renderTeacherSubmissions();
+    img.onerror = rej; img.src = url;
+  });
+}
+function readAsData(file) {
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); });
+}
+async function handleFileSelect(e) {
+  for (const f of Array.from(e.target.files)) {
+    try {
+      if (f.type === 'application/pdf') {
+        if (f.size > 1.5 * 1024 * 1024) { alert(`الملف ${f.name} أكبر من 1.5 ميجا`); continue; }
+        selectedFiles.push({ name: f.name, type: f.type, data: await readAsData(f) });
+      } else if (f.type.startsWith('image/')) {
+        selectedFiles.push({ name: f.name, type: 'image/jpeg', data: await compressImage(f) });
       }
-    }
+    } catch { alert('تعذّر قراءة الملف ' + f.name); }
+  }
+  e.target.value = ''; renderPreviews();
+}
+function renderPreviews() {
+  $('filePreviewList').innerHTML = selectedFiles.map((f, i) => `
+    <div class="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm">
+      <div class="flex items-center gap-2 truncate"><i class="fa-solid ${f.type.includes('pdf') ? 'fa-file-pdf text-red-500' : 'fa-image text-indigo-500'}"></i>
+      <span class="truncate max-w-[180px]">${esc(f.name)}</span></div>
+      <button type="button" onclick="selectedFiles.splice(${i},1);renderPreviews()" class="text-red-500 px-2"><i class="fa-solid fa-xmark"></i></button>
+    </div>`).join('');
+}
+function handleStudentSubmit(e) {
+  e.preventDefault();
+  if (!selectedFiles.length) return alert('يرجى إرفاق صورة الحل أو الملف أولاً');
+  const list = load();
+  list.unshift({
+    id: Date.now(), name: norm($('studentName').value), title: norm($('hwTitle').value),
+    grade: $('gradeSelect').value, className: $('classSelect').value,
+    note: $('studentNote').value.trim() || 'لا توجد ملاحظات', files: selectedFiles
+  });
+  if (!save(list)) return;
+  alert('تم إرسال الحل بنجاح!');
+  $('submissionForm').reset(); selectedFiles = []; renderPreviews(); $('classSelect').disabled = true;
+}
 
-    // Dynamic classes dropdown
-    function handleGradeChange() {
-      const grade = document.getElementById('gradeSelect').value;
-      const classSelect = document.getElementById('classSelect');
-      classSelect.innerHTML = '<option value="" disabled selected>اختر الفصل...</option>';
-      if (gradeClasses[grade]) {
-        classSelect.disabled = false;
-        gradeClasses[grade].forEach(cls => {
-          const opt = document.createElement('option');
-          opt.value = cls;
-          opt.textContent = cls;
-          classSelect.appendChild(opt);
-        });
-      } else {
-        classSelect.disabled = true;
-      }
-    }
+/* ---------- teacher: list ---------- */
+function filesBtns(item) {
+  return item.files.map((f, i) => `<button onclick="viewFile(${item.id},${i})" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold hover:border-indigo-500">
+    <i class="fa-solid ${f.type.includes('pdf') ? 'fa-file-pdf text-red-500' : 'fa-image text-indigo-500'}"></i><span class="truncate max-w-[120px]">${esc(f.name)}</span></button>`).join('');
+}
+function renderList() {
+  const q = $('fSearch').value.trim(), g = $('fGrade').value, c = $('fClass').value;
+  const rows = load().filter(s => (g === 'all' || s.grade === g) && (c === 'all' || s.className === c) && (!q || s.name.includes(q)));
+  $('cnt').textContent = rows.length;
+  $('listBox').innerHTML = rows.length ? rows.map(it => `
+    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex flex-col md:flex-row justify-between gap-4">
+      <div class="space-y-1.5">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="font-bold text-lg">${esc(it.name)}</span>
+          <span class="bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded font-semibold">${esc(it.grade)} - ${esc(it.className)}</span>
+        </div>
+        <p class="text-sm font-semibold text-slate-700">${esc(it.title || '—')}</p>
+        <p class="text-xs text-slate-500"><i class="fa-regular fa-clock ml-1"></i>${fmtDate(it.id)}</p>
+        <p class="text-xs bg-white p-2 rounded border inline-block"><b>ملاحظة:</b> ${esc(it.note)}</p>
+        <div class="pt-2 flex flex-wrap gap-2 items-center"><span class="text-xs font-bold text-slate-500">الملفات:</span>${filesBtns(it)}</div>
+      </div>
+      <div><button onclick="deleteSub(${it.id})" class="btn bg-red-50 hover:bg-red-100 text-red-600 border-red-200 !text-xs"><i class="fa-solid fa-trash-can ml-1"></i>حذف</button></div>
+    </div>`).join('')
+    : '<div class="text-center py-12 text-slate-400"><i class="fa-regular fa-folder-open text-5xl mb-3"></i><p class="font-bold">لا توجد واجبات</p></div>';
+}
+function deleteSub(id) {
+  if (!confirm('حذف هذا الواجب؟')) return;
+  save(load().filter(s => s.id !== id)); refresh();
+}
+function clearAll() {
+  if (!confirm('تحذير: سيتم مسح جميع الواجبات. متأكد؟')) return;
+  localStorage.removeItem(KEY); refresh();
+}
+function refresh() { setView(curView); }
 
-    // File selection & Base64 encoding
-    function handleFileSelect(e) {
-      const files = Array.from(e.target.files);
-      files.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          selectedFiles.push({
-            name: file.name,
-            type: file.type,
-            data: event.target.result
-          });
-          renderFilePreviews();
-        };
-        reader.readAsDataURL(file);
-      });
-      e.target.value = '';
-    }
+/* ---------- teacher: stats ---------- */
+function statsData() {
+  const m = {};
+  load().forEach(s => {
+    const k = s.grade + '|' + s.className;
+    const o = m[k] ??= { grade: s.grade, cls: s.className, stu: new Set(), subs: 0, files: 0, last: 0 };
+    o.stu.add(s.name); o.subs++; o.files += s.files.length; o.last = Math.max(o.last, s.id);
+  });
+  const order = [...gradeClasses['الابتدائية'], ...gradeClasses['المتوسطة']];
+  const arr = Object.values(m).sort((a, b) => a.grade.localeCompare(b.grade) || order.indexOf(a.cls) - order.indexOf(b.cls));
+  const rows = arr.map(o => [o.grade, o.cls, o.stu.size, o.subs, o.files, fmtDate(o.last)]);
+  const tot = arr.reduce((t, o) => [t[0] + o.stu.size, t[1] + o.subs, t[2] + o.files], [0, 0, 0]);
+  if (rows.length) rows.push(['الإجمالي', '', ...tot, '']);
+  return { title: 'إحصائية الواجبات حسب الفصول', headers: ['المرحلة','الفصل','عدد الطلاب','عدد الواجبات','عدد الملفات','آخر تسليم'], rows, name: 'class-stats' };
+}
+function exportBtns(kind) {
+  return [['xlsx','fa-file-excel text-green-600','Excel'],['doc','fa-file-word text-blue-600','Word'],['pdf','fa-file-pdf text-red-600','PDF']]
+    .map(([f, ic, l]) => `<button onclick="doExport('${kind}','${f}')" class="btn bg-white border-slate-300 hover:border-indigo-500"><i class="fa-solid ${ic} ml-1"></i>${l}</button>`).join('');
+}
+function renderStats() {
+  const d = statsData();
+  $('statsExp').innerHTML = exportBtns('stats');
+  $('statsTbl').innerHTML = `<thead class="bg-indigo-50"><tr>${d.headers.map(h => `<th class="p-2 border">${h}</th>`).join('')}</tr></thead><tbody>` +
+    (d.rows.length ? d.rows.map((r, i) => `<tr class="${i === d.rows.length - 1 ? 'font-bold bg-slate-50' : ''}">${r.map(c => `<td class="p-2 border">${esc(c)}</td>`).join('')}</tr>`).join('')
+    : `<tr><td colspan="6" class="p-6 text-slate-400">لا توجد بيانات</td></tr>`) + '</tbody>';
+}
 
-    function renderFilePreviews() {
-      const container = document.getElementById('filePreviewList');
-      container.innerHTML = '';
-      selectedFiles.forEach((file, index) => {
-        const div = document.createElement('div');
-        div.className = 'flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm';
-        const isPdf = file.type.includes('pdf');
-        div.innerHTML = `
-          <div class="flex items-center gap-2 truncate">
-            <i class="fa-solid ${isPdf ? 'fa-file-pdf text-red-500' : 'fa-image text-indigo-500'}"></i>
-            <span class="truncate max-w-[180px] font-medium text-slate-700">${file.name}</span>
-          </div>
-          <button type="button" onclick="removeSelectedFile(${index})" class="text-red-500 hover:text-red-700 px-2 py-1 text-xs">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        `;
-        container.appendChild(div);
-      });
-    }
+/* ---------- teacher: student report ---------- */
+function studentList() {
+  const m = new Map();
+  load().forEach(s => m.set(stuKey(s), s));
+  return [...m.entries()].sort((a, b) => a[1].name.localeCompare(b[1].name, 'ar'));
+}
+function fillStudents() {
+  const keep = $('stuSel').value, l = studentList();
+  $('stuSel').innerHTML = '<option value="">اختر الطالب...</option>' + l.map(([k, s]) => `<option value="${esc(k)}">${esc(s.name)} — ${esc(s.grade)} / ${esc(s.className)}</option>`).join('');
+  if (l.some(([k]) => k === keep)) $('stuSel').value = keep;
+  renderStudent();
+}
+function studentData() {
+  const k = $('stuSel').value; if (!k) return null;
+  const subs = load().filter(s => stuKey(s) === k).sort((a, b) => a.id - b.id);
+  if (!subs.length) return null;
+  const s = subs[0];
+  return {
+    title: `تقرير واجبات الطالب: ${s.name}`, sub: `${s.grade} - ${s.className} | عدد الواجبات: ${subs.length}`,
+    headers: ['#','عنوان الواجب','تاريخ التسليم','عدد الملفات','ملاحظة'],
+    rows: subs.map((x, i) => [i + 1, x.title || '—', fmtDate(x.id), x.files.length, x.note]),
+    name: 'student-' + s.name.replace(/\s+/g, '_'), subs
+  };
+}
+function renderStudent() {
+  const d = studentData();
+  $('stuExp').innerHTML = d ? exportBtns('student') : '';
+  $('stuBox').innerHTML = d ? `<p class="text-sm font-bold mb-3">${esc(d.sub)}</p><div class="space-y-3">` + d.subs.map((x, i) => `
+    <div class="p-3 rounded-xl border bg-slate-50">
+      <div class="flex flex-wrap justify-between gap-2 text-sm"><b>${i + 1}. ${esc(x.title || '—')}</b><span class="text-xs text-slate-500">${fmtDate(x.id)}</span></div>
+      <p class="text-xs text-slate-600 my-1.5">${esc(x.note)}</p>
+      <div class="flex flex-wrap gap-2">${filesBtns(x)}</div>
+    </div>`).join('') + '</div>'
+    : '<p class="text-center text-slate-400 py-10">اختر طالباً لعرض واجباته وتصدير تقريره</p>';
+}
 
-    function removeSelectedFile(index) {
-      selectedFiles.splice(index, 1);
-      renderFilePreviews();
-    }
+/* ---------- export ---------- */
+function tableHtml(d) {
+  const th = 'border:1px solid #444;padding:6px;background:#e0e7ff;', td = 'border:1px solid #444;padding:6px;text-align:center;';
+  return `<h2 style="text-align:center;margin:0 0 4px">${esc(d.title)}</h2>
+    <p style="text-align:center;margin:0 0 4px;color:#555">مدارس الأرقم الأهلية - قسم اللغة الإنجليزية</p>
+    ${d.sub ? `<p style="text-align:center;margin:0 0 4px">${esc(d.sub)}</p>` : ''}
+    <p style="text-align:center;margin:0 0 12px;color:#777;font-size:12px">${fmtDate(Date.now())}</p>
+    <table style="width:100%;border-collapse:collapse;font-size:13px" dir="rtl"><tr>${d.headers.map(h => `<th style="${th}">${h}</th>`).join('')}</tr>
+    ${d.rows.map(r => `<tr>${r.map(c => `<td style="${td}">${esc(c)}</td>`).join('')}</tr>`).join('')}</table>`;
+}
+function download(blob, name) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+async function doExport(kind, fmt) {
+  const d = kind === 'stats' ? statsData() : studentData();
+  if (!d || !d.rows.length) return alert('لا توجد بيانات للتصدير');
+  const fname = d.name + '-' + new Date().toISOString().slice(0, 10);
+  if (fmt === 'xlsx') {
+    const aoa = [[d.title], d.sub ? [d.sub] : [], [], d.headers, ...d.rows];
+    const ws = XLSX.utils.aoa_to_sheet(aoa); ws['!cols'] = d.headers.map(() => ({ wch: 20 }));
+    const wb = XLSX.utils.book_new(); wb.Workbook = { Views: [{ RTL: true }] };
+    XLSX.utils.book_append_sheet(wb, ws, 'Report'); XLSX.writeFile(wb, fname + '.xlsx');
+  } else if (fmt === 'doc') {
+    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" dir="rtl"><head><meta charset="utf-8"></head><body dir="rtl" style="font-family:Arial">${tableHtml(d)}</body></html>`;
+    download(new Blob(['\ufeff', html], { type: 'application/msword' }), fname + '.doc');
+  } else {
+    const box = document.createElement('div');
+    box.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff;padding:28px;direction:rtl;font-family:Cairo,sans-serif;color:#000';
+    box.innerHTML = tableHtml(d); document.body.appendChild(box);
+    try {
+      await document.fonts.ready;
+      const cv = await html2canvas(box, { scale: 2, backgroundColor: '#fff' });
+      const pdf = new jspdf.jsPDF('p', 'mm', 'a4'), w = 210, ph = 297, h = cv.height * w / cv.width, img = cv.toDataURL('image/jpeg', 0.95);
+      let y = 0; pdf.addImage(img, 'JPEG', 0, 0, w, h);
+      for (let left = h - ph; left > 0; left -= ph) { y -= ph; pdf.addPage(); pdf.addImage(img, 'JPEG', 0, y, w, h); }
+      pdf.save(fname + '.pdf');
+    } catch { alert('تعذّر إنشاء ملف PDF'); }
+    box.remove();
+  }
+}
 
-    // Submit form
-    function handleStudentSubmit(e) {
-      e.preventDefault();
-      if (selectedFiles.length === 0) {
-        alert('يرجى إرفاق صورة الحل أو الملف أولاً');
-        return;
-      }
+/* ---------- file preview ---------- */
+async function viewFile(id, i) {
+  const sub = load().find(s => s.id === id), f = sub && sub.files[i]; if (!f) return;
+  $('modalTitle').textContent = `${sub.name} - ${f.name}`;
+  const body = $('modalBody'); body.innerHTML = '';
+  if (f.type.includes('pdf')) {
+    const url = URL.createObjectURL(await (await fetch(f.data)).blob());
+    const fr = document.createElement('iframe'); fr.src = url; fr.className = 'w-full h-[70vh] rounded border-0'; body.appendChild(fr);
+  } else {
+    const im = document.createElement('img'); im.src = f.data; im.alt = f.name; im.className = 'max-h-[70vh] max-w-full rounded object-contain'; body.appendChild(im);
+  }
+  $('previewModal').classList.replace('hidden', 'flex');
+}
+function closeModal() { $('previewModal').classList.replace('flex', 'hidden'); $('modalBody').innerHTML = ''; }
 
-      const submission = {
-        id: Date.now(),
-        name: document.getElementById('studentName').value,
-        grade: document.getElementById('gradeSelect').value,
-        className: document.getElementById('classSelect').value,
-        note: document.getElementById('studentNote').value || 'لا توجد ملاحظات',
-        files: selectedFiles,
-        date: new Date().toLocaleDateString('ar-SA', { hour: '2-digit', minute: '2-digit' })
-      };
-
-      const existing = JSON.parse(localStorage.getItem('al_arqam_submissions') || '[]');
-      existing.unshift(submission);
-      localStorage.setItem('al_arqam_submissions', JSON.stringify(existing));
-
-      alert('تم إرسال الحل بنجاح!');
-      document.getElementById('submissionForm').reset();
-      selectedFiles = [];
-      renderFilePreviews();
-      document.getElementById('classSelect').disabled = true;
-    }
-
-    // Render Teacher View
-    function renderTeacherSubmissions() {
-      const container = document.getElementById('submissionsContainer');
-      const countEl = document.getElementById('submissionsCount');
-      const filterGrade = document.getElementById('teacherFilterGrade').value;
-      const allSubmissions = JSON.parse(localStorage.getItem('al_arqam_submissions') || '[]');
-
-      const filtered = filterGrade === 'all' 
-        ? allSubmissions 
-        : allSubmissions.filter(s => s.grade === filterGrade);
-
-      countEl.textContent = filtered.length;
-      container.innerHTML = '';
-
-      if (filtered.length === 0) {
-        container.innerHTML = `
-          <div class="text-center py-12 text-slate-400">
-            <i class="fa-regular fa-folder-open text-5xl mb-3"></i>
-            <p class="font-bold">لا توجد واجبات مرسلة حتى الآن</p>
-          </div>
-        `;
-        return;
-      }
-
-      filtered.forEach(item => {
-        const card = document.createElement('div');
-        card.className = "p-4 md:p-5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-50/80 transition flex flex-col md:flex-row justify-between gap-4";
-        
-        let filesHtml = item.files.map((f, i) => `
-          <button onclick="viewFile(${item.id}, ${i})" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:border-indigo-500 hover:text-indigo-600 transition shadow-sm">
-            <i class="fa-solid ${f.type.includes('pdf') ? 'fa-file-pdf text-red-500' : 'fa-image text-indigo-500'}"></i>
-            <span class="truncate max-w-[120px]">${f.name}</span>
-          </button>
-        `).join('');
-
-        card.innerHTML = `
-          <div class="space-y-1.5">
-            <div class="flex items-center gap-2">
-              <span class="font-bold text-slate-800 text-base md:text-lg">${item.name}</span>
-              <span class="bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded font-semibold">${item.grade} - ${item.className}</span>
-            </div>
-            <p class="text-xs text-slate-500"><i class="fa-regular fa-clock ml-1"></i>${item.date}</p>
-            <p class="text-xs text-slate-600 bg-white p-2 rounded border border-slate-200/60 inline-block"><span class="font-bold">ملاحظة:</span> ${item.note}</p>
-            <div class="pt-2 flex flex-wrap gap-2 items-center">
-              <span class="text-xs font-bold text-slate-500">الملفات:</span>
-              ${filesHtml}
-            </div>
-          </div>
-          <div class="flex items-center md:items-start justify-end">
-            <button onclick="deleteSubmission(${item.id})" class="text-red-500 hover:text-red-700 text-xs bg-red-50 hover:bg-red-100 p-2 rounded-lg transition border border-red-200">
-              <i class="fa-solid fa-trash-can ml-1"></i> حذف
-            </button>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    // Delete single submission
-    function deleteSubmission(id) {
-      if (!confirm('هل أنت متأكد من حذف هذا الواجب؟')) return;
-      let list = JSON.parse(localStorage.getItem('al_arqam_submissions') || '[]');
-      list = list.filter(s => s.id !== id);
-      localStorage.setItem('al_arqam_submissions', JSON.stringify(list));
-      renderTeacherSubmissions();
-    }
-
-    // Clear all submissions
-    function clearAllSubmissions() {
-      if (!confirm('تحذير: هل أنت متأكد من مسح جميع الواجبات المسجلة؟')) return;
-      localStorage.removeItem('al_arqam_submissions');
-      renderTeacherSubmissions();
-    }
-
-    // Modal preview for teacher
-    function viewFile(submissionId, fileIndex) {
-      const list = JSON.parse(localStorage.getItem('al_arqam_submissions') || '[]');
-      const sub = list.find(s => s.id === submissionId);
-      if (!sub || !sub.files[fileIndex]) return;
-
-      const file = sub.files[fileIndex];
-      const modal = document.getElementById('previewModal');
-      const modalBody = document.getElementById('modalBody');
-      const modalTitle = document.getElementById('modalTitle');
-
-      modalTitle.textContent = `${sub.name} - ${file.name}`;
-      modalBody.innerHTML = '';
-
-      if (file.type.includes('pdf')) {
-        modalBody.innerHTML = `<iframe src="${file.data}" class="w-full h-[70vh] rounded border-0"></iframe>`;
-      } else {
-        modalBody.innerHTML = `<img src="${file.data}" class="max-h-[70vh] max-w-full rounded object-contain" alt="${file.name}">`;
-      }
-
-      modal.classList.remove('hidden');
-    }
-
-    function closeModal() {
-      document.getElementById('previewModal').classList.add('hidden');
-    }
-  </script>
+switchTab('student');
+</script>
 </body>
 </html>
