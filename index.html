@@ -45,17 +45,17 @@
     <form id="submissionForm" onsubmit="handleStudentSubmit(event)" class="space-y-5">
       <div class="grid md:grid-cols-2 gap-5">
         <div><label class="block text-sm font-bold mb-1">اسم الطالب <span class="text-red-500">*</span></label>
-          <input type="text" id="studentName" required maxlength="80" placeholder="مثال: أحمد محمد علي" class="inp"></div>
+          <input type="text" id="studentName" required maxlength="80" placeholder="مثال: محمد سلطان القحطاني" class="inp"></div>
         <div><label class="block text-sm font-bold mb-1">عنوان الواجب <span class="text-red-500">*</span></label>
           <input type="text" id="hwTitle" required maxlength="100" placeholder="مثال: Unit 3 - Exercise 2" class="inp"></div>
-        <div><label class="block text-sm font-bold mb-1">المرحلة <span class="text-red-500">*</span></label>
+        <div><label class="block text-sm font-bold mb-1">الصف الدراسي <span class="text-red-500">*</span></label>
           <select id="gradeSelect" required onchange="fillClasses('gradeSelect','classSelect')" class="inp">
-            <option value="" disabled selected>اختر المرحلة...</option>
-            <option value="الابتدائية">المرحلة الابتدائية</option>
-            <option value="المتوسطة">المرحلة المتوسطة</option>
+            <option value="" disabled selected>اختر الصف...</option>
+            <option value="صف ثاني ابتدائي">صف ثاني ابتدائي</option>
+            <option value="صف رابع ابتدائي">صف رابع ابتدائي</option>
           </select></div>
         <div><label class="block text-sm font-bold mb-1">الفصل <span class="text-red-500">*</span></label>
-          <select id="classSelect" required disabled class="inp"><option value="" disabled selected>يرجى اختيار المرحلة أولاً</option></select></div>
+          <select id="classSelect" required disabled class="inp"><option value="" disabled selected>يرجى اختيار الصف أولاً</option></select></div>
       </div>
       <div><label class="block text-sm font-bold mb-1">ملاحظات إضافية</label>
         <input type="text" id="studentNote" maxlength="200" placeholder="أي ملاحظة للمعلم..." class="inp"></div>
@@ -91,7 +91,7 @@
       <div class="flex flex-wrap gap-2 items-center mb-4">
         <input id="fSearch" oninput="renderList()" placeholder="بحث باسم الطالب..." class="inp !w-auto flex-1 min-w-[140px] !py-2 text-sm">
         <select id="fGrade" onchange="fillClasses('fGrade','fClass',true);renderList()" class="inp !w-auto !py-2 text-sm">
-          <option value="all">كل المراحل</option><option value="الابتدائية">الابتدائية</option><option value="المتوسطة">المتوسطة</option></select>
+          <option value="all">كل الصفوف</option><option value="صف ثاني ابتدائي">صف ثاني ابتدائي</option><option value="صف رابع ابتدائي">صف رابع ابتدائي</option></select>
         <select id="fClass" onchange="renderList()" class="inp !w-auto !py-2 text-sm"><option value="all">كل الفصول</option></select>
         <span id="cnt" class="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1 rounded-full font-bold">0</span>
         <button onclick="clearAll()" class="btn bg-red-50 hover:bg-red-100 text-red-600 border-red-200"><i class="fa-solid fa-trash-can ml-1"></i>مسح الكل</button>
@@ -154,8 +154,8 @@
 const TEACHER_PIN = "19931993"; // تنبيه: ظاهر لأي شخص يفتح الكود. الحماية الحقيقية تحتاج خادماً.
 const KEY = 'al_arqam_submissions';
 const gradeClasses = {
-  "الابتدائية": ["الصف الأول","الصف الثاني","الصف الثالث","الصف الرابع","الصف الخامس","الصف السادس"],
-  "المتوسطة": ["أول متوسط","ثاني متوسط","ثالث متوسط"]
+  "صف ثاني ابتدائي": ["ثاني أول (2/1)","ثاني ثاني (2/2)","ثاني ثالث (2/3)"],
+  "صف رابع ابتدائي": ["رابع أول (4/1)","رابع ثاني (4/2)"]
 };
 let teacherAuth = false, selectedFiles = [], curView = 'List';
 const $ = id => document.getElementById(id);
@@ -299,12 +299,12 @@ function statsData() {
     const o = m[k] ??= { grade: s.grade, cls: s.className, stu: new Set(), subs: 0, files: 0, last: 0 };
     o.stu.add(s.name); o.subs++; o.files += s.files.length; o.last = Math.max(o.last, s.id);
   });
-  const order = [...gradeClasses['الابتدائية'], ...gradeClasses['المتوسطة']];
-  const arr = Object.values(m).sort((a, b) => a.grade.localeCompare(b.grade) || order.indexOf(a.cls) - order.indexOf(b.cls));
+  const order = Object.values(gradeClasses).flat(), gk = Object.keys(gradeClasses);
+  const arr = Object.values(m).sort((a, b) => gk.indexOf(a.grade) - gk.indexOf(b.grade) || order.indexOf(a.cls) - order.indexOf(b.cls));
   const rows = arr.map(o => [o.grade, o.cls, o.stu.size, o.subs, o.files, fmtDate(o.last)]);
   const tot = arr.reduce((t, o) => [t[0] + o.stu.size, t[1] + o.subs, t[2] + o.files], [0, 0, 0]);
   if (rows.length) rows.push(['الإجمالي', '', ...tot, '']);
-  return { title: 'إحصائية الواجبات حسب الفصول', headers: ['المرحلة','الفصل','عدد الطلاب','عدد الواجبات','عدد الملفات','آخر تسليم'], rows, name: 'class-stats' };
+  return { title: 'إحصائية الواجبات حسب الفصول', headers: ['الصف','الفصل','عدد الطلاب','عدد الواجبات','عدد الملفات','آخر تسليم'], rows, name: 'class-stats' };
 }
 function exportBtns(kind) {
   return [['xlsx','fa-file-excel text-green-600','Excel'],['doc','fa-file-word text-blue-600','Word'],['pdf','fa-file-pdf text-red-600','PDF']]
