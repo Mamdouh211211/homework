@@ -44,18 +44,18 @@
     </div>
     <form id="submissionForm" onsubmit="handleStudentSubmit(event)" class="space-y-5">
       <div class="grid md:grid-cols-2 gap-5">
-        <div><label class="block text-sm font-bold mb-1">اسم الطالب <span class="text-red-500">*</span></label>
-          <input type="text" id="studentName" required maxlength="80" placeholder="مثال: محمد سلطان القحطاني" class="inp"></div>
-        <div><label class="block text-sm font-bold mb-1">عنوان الواجب <span class="text-red-500">*</span></label>
-          <input type="text" id="hwTitle" required maxlength="100" placeholder="مثال: Unit 3 - Exercise 2" class="inp"></div>
         <div><label class="block text-sm font-bold mb-1">الصف الدراسي <span class="text-red-500">*</span></label>
-          <select id="gradeSelect" required onchange="fillClasses('gradeSelect','classSelect')" class="inp">
+          <select id="gradeSelect" required onchange="fillClasses('gradeSelect','classSelect');resetRoster()" class="inp">
             <option value="" disabled selected>اختر الصف...</option>
             <option value="صف ثاني ابتدائي">صف ثاني ابتدائي</option>
             <option value="صف رابع ابتدائي">صف رابع ابتدائي</option>
           </select></div>
         <div><label class="block text-sm font-bold mb-1">الفصل <span class="text-red-500">*</span></label>
-          <select id="classSelect" required disabled class="inp"><option value="" disabled selected>يرجى اختيار الصف أولاً</option></select></div>
+          <select id="classSelect" required disabled onchange="fillRoster()" class="inp"><option value="" disabled selected>يرجى اختيار الصف أولاً</option></select></div>
+        <div><label class="block text-sm font-bold mb-1">اسم الطالب <span class="text-red-500">*</span></label>
+          <select id="studentSel" required disabled class="inp"><option value="" disabled selected>يرجى اختيار الفصل أولاً</option></select></div>
+        <div><label class="block text-sm font-bold mb-1">عنوان الواجب <span class="text-red-500">*</span></label>
+          <input type="text" id="hwTitle" required maxlength="100" placeholder="مثال: Unit 3 - Exercise 2" class="inp"></div>
       </div>
       <div><label class="block text-sm font-bold mb-1">ملاحظات إضافية</label>
         <input type="text" id="studentNote" maxlength="200" placeholder="أي ملاحظة للمعلم..." class="inp"></div>
@@ -157,6 +157,126 @@ const gradeClasses = {
   "صف ثاني ابتدائي": ["ثاني أول (2/1)","ثاني ثاني (2/2)","ثاني ثالث (2/3)"],
   "صف رابع ابتدائي": ["رابع أول (4/1)","رابع ثاني (4/2)"]
 };
+const ROSTER = {
+  "ثاني أول (2/1)": `الزبير عبدالله محمد القحطاني
+اياد علي سعيد دحمان الشهري
+حاتم موسى قاعد المطيري
+حسان عبدالوهاب حسين ال غوينم
+حمزة احمد سامي ولي
+رمضان عيسى
+صالح عبدالإله صالح الطويان
+صالح محمد الرسي
+طلال عبدالله عيسى عبدالله الصقير
+عبدالإله عبدالرحمن العوفي
+عبدالرحمن عبدالعزيز محمد عبدالعزيز العوهلي
+عبدالله عبدالحكيم جاسر عبدالكريم الجاسر
+علي عبدالله اليحيى
+عمر علي غرم الشهراني
+فراس حمد سليمان الزويد
+فهد محمد الرسي
+محمد مشاري محمد العجيمي
+محمد سالم محمد سالم الغامدي
+ناصر عبدالله ناصر محمد المتعب
+نصار معاذ نصار الأحمدي
+نواف حسن العرجاني
+نواف بدران عبدالله الجلاجل
+يوسف بن وائل عبدالله النايل`.split("\n"),
+  "ثاني ثاني (2/2)": `أحمد قاسم حمود الاحمد
+أحمد
+آدم احمد نادر احمد عبدالله
+أديب ياسر سمار مسرع المطيري
+احمد عادل اشرف زيدان
+اياد محمد محمد عبدالقادر
+باسل حسام سليمان الرميحي
+تركي عبدالإله سلمان الروقي
+خالد فهد الدوسري
+خالد محمد عبدالله عسيري
+زكريا فابيو دراغو دراغو
+زيد محمد شوقي سليم سليم
+سلطان عبدالله محمد ماضي الماضي
+سليمان مشعل صالح الوهيد
+عبدالله علي مصطفى البكري
+عبدالمجيد سليمان صالح سليمان الطيار
+فارس محمد عبدالرحمن المشيلح
+فهد عبدالعزيز فهد الهليل
+فواز بندر احمد عبدالمحسن العويد
+محمد سالم ظافر الشهراني
+ناصر بدر ناصر المقرن
+يوسف عبدالعزيز العضاض`.split("\n"),
+  "ثاني ثالث (2/3)": `البدر خالد إبراهيم خلف الدلبحي
+عبدالعزيز مرزوق الحربي
+عبدالعزيز سعد عبدالعزيز الغامدي
+عبدالعزيز يوسف حمد المزيني
+عبدالله يوسف عبدالله الرميحي
+عبدالله صالح محمد فائز الفائز
+عثمان عبدالله احمد حامد الغانمي
+عساف سلمان هادي العمري
+عمر سعد سعيد عايض الغوينم
+فراس أنس علي محمد الخشان
+فواز رافع فواز الشهري
+محمد علي احمد عبدالمحسن الرشود
+محمد فهد عياد رباح المطيري
+محمد يونس محمود سيرت
+محمود يونس محمود سيرت
+ناصر محمد بكر علي الخطيب
+هابس منصور هابس العتيبي`.split("\n"),
+  "رابع أول (4/1)": `أحمد عبدالهادي محمد عبدالرحمن ال جلاب الشهراني
+ابراهيم زهير عبدالرحمن القحطاني
+امجد صالح محمد عبدالله الخضر
+اياد مروان عبدالعزيز الفداء
+حمد خالد علي محمد الشهري
+رحيم علي صالح عثامنة
+سعد نايف بن فهد بن معمر
+سعود عبدالعزيز عبدالله الغامدي
+سعود ياسر حجاب سعيد العتيبي
+عبدالعزيز مشاري محمد العجيمي
+عبدالله سعد عبدالله الزنان
+عمار ياسر علي السيد
+عمر محمود عبدالمنعم فرحات فرحات
+فارس فيصل مرزوق فيصل العتيبي
+فيصل سعد فيصل القحطاني
+مالك عبدالحكيم جاسر عبدالكريم الجاسر
+محمد طارق أحمد حسن الحارثي
+محمد طلال محمد عبدالله الأحمري
+محمد عبدالعزيز محمد علي الحميدان
+مشعل محمد عيد محمد العتيبي
+مقرن صالح محمد صالح الشهري
+مهند بدر محمد دوشق الناهض
+نضال احمد محمد جاهين
+نواف عبدالله ابراهيم القريشي
+يوسف عبدالعزيز صالح عبدان الزهراني`.split("\n"),
+  "رابع ثاني (4/2)": `ابراهيم عبدالعزيز رومي الرومي
+ايلان علاء عمر فضه
+تركي اسامة محمد ناصر الناصر
+حسام محمد سليمان القرعاوي
+سليمان بندر صالح فهد السبيل
+عبدالرحمن ماجد قليل الحارثي
+عبدالعزيز علي غرم الشهراني
+عبدالله محمد عبدالعزيز السعيد
+عبدالله عبدالرزاق نايف الحربي
+علي عمر محمد يوسف العمر
+عمر خالد عوض الأحمري
+غانم عادل غانم القحطاني
+فهد فؤاد عبدالعزيز العريفج
+فهد توفيق عمر العصيمي
+محمد سلطان محمد احمد القحطاني
+مسلط مشرع مسلط السبيعي
+نواف سعود درويش البوعنين
+نواف رجب عبدالله محمد الزهراني
+هاشم محمد بن عبدالله العلياني
+هشام مرزوق علي ال رشيد اليامي
+يزيد محمد ابراهيم حامد الغامدي`.split("\n")
+};
+function fillRoster() {
+  const c = $('classSelect').value, s = $('studentSel');
+  s.innerHTML = '<option value="" disabled selected>اختر اسمك...</option>';
+  (ROSTER[c] || []).forEach(n => s.add(new Option(n, n)));
+  s.disabled = !ROSTER[c];
+}
+function resetRoster() {
+  const s = $('studentSel');
+  s.innerHTML = '<option value="" disabled selected>يرجى اختيار الفصل أولاً</option>'; s.disabled = true;
+}
 let teacherAuth = false, selectedFiles = [], curView = 'List';
 const $ = id => document.getElementById(id);
 
@@ -247,13 +367,13 @@ function handleStudentSubmit(e) {
   if (!selectedFiles.length) return alert('يرجى إرفاق صورة الحل أو الملف أولاً');
   const list = load();
   list.unshift({
-    id: Date.now(), name: norm($('studentName').value), title: norm($('hwTitle').value),
+    id: Date.now(), name: norm($('studentSel').value), title: norm($('hwTitle').value),
     grade: $('gradeSelect').value, className: $('classSelect').value,
     note: $('studentNote').value.trim() || 'لا توجد ملاحظات', files: selectedFiles
   });
   if (!save(list)) return;
   alert('تم إرسال الحل بنجاح!');
-  $('submissionForm').reset(); selectedFiles = []; renderPreviews(); $('classSelect').disabled = true;
+  $('submissionForm').reset(); selectedFiles = []; renderPreviews(); $('classSelect').disabled = true; resetRoster();
 }
 
 /* ---------- teacher: list ---------- */
